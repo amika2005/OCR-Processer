@@ -212,12 +212,17 @@ export default function DocumentUpload() {
             const jsonStr = trimmed.slice(6);
             if (jsonStr) {
                const parsed = JSON.parse(jsonStr);
+               if (parsed.error) {
+                 throw new Error(parsed.error);
+               }
                if (parsed.choices?.[0]?.delta?.content) {
                  fullText += parsed.choices[0].delta.content;
                }
             }
           } catch (e) {
-            // ignore partial json
+            if (e.message !== "Unexpected end of JSON input" && !e.message.includes("JSON")) {
+              throw e; 
+            }
           }
         }
       }
