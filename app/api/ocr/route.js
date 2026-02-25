@@ -3,13 +3,7 @@ import { NextResponse } from 'next/server';
 export const maxDuration = 300; 
 export const dynamic = "force-dynamic"; 
 
-export const config = {
-  api: {
-    bodyParser: {
-      sizeLimit: '10mb',
-    },
-  },
-};
+// config sizeLimit is not supported in the app router this way.
 
 export async function POST(req) {
   try {
