@@ -111,8 +111,8 @@ export default function DocumentUpload() {
         img.src = event.target.result;
         img.onload = () => {
           const canvas = document.createElement("canvas");
-          const MAX_WIDTH = 1200;
-          const MAX_HEIGHT = 1200;
+          const MAX_WIDTH = 800; // Lowered to 800px for robust mobile upload speeds
+          const MAX_HEIGHT = 800;
           let width = img.width;
           let height = img.height;
 
@@ -163,7 +163,7 @@ export default function DocumentUpload() {
     }
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 seconds (Vercel max edge is 30s)
+    const timeoutId = setTimeout(() => controller.abort(), 90000); // 90 seconds global abort timeout
 
     let response;
     try {
@@ -177,11 +177,11 @@ export default function DocumentUpload() {
         }),
         signal: controller.signal,
       });
-      clearTimeout(timeoutId);
+      // Do not clear timeout here, keep it alive through stream reading
     } catch (fetchError) {
       clearTimeout(timeoutId);
       if (fetchError.name === "AbortError") {
-        throw new Error("API Request timed out after 5 minutes.");
+        throw new Error("API Request timed out after 90 seconds.");
       }
       throw fetchError;
     }
@@ -197,35 +197,39 @@ export default function DocumentUpload() {
     let fullText = "";
     let buffer = "";
 
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split("\n");
-      buffer = lines.pop() || "";
-      
-      for (const line of lines) {
-        const trimmed = line.trim();
-        if (trimmed.startsWith("data: ") && !trimmed.includes("[DONE]")) {
-          try {
-            const jsonStr = trimmed.slice(6);
-            if (jsonStr) {
-               const parsed = JSON.parse(jsonStr);
-               if (parsed.error) {
-                 throw new Error(parsed.error);
-               }
-               if (parsed.choices?.[0]?.delta?.content) {
-                 fullText += parsed.choices[0].delta.content;
-               }
-            }
-          } catch (e) {
-            if (e.message !== "Unexpected end of JSON input" && !e.message.includes("JSON")) {
-              throw e; 
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || "";
+        
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (trimmed.startsWith("data: ") && !trimmed.includes("[DONE]")) {
+            try {
+              const jsonStr = trimmed.slice(6);
+              if (jsonStr) {
+                 const parsed = JSON.parse(jsonStr);
+                 if (parsed.error) {
+                   throw new Error(parsed.error);
+                 }
+                 if (parsed.choices?.[0]?.delta?.content) {
+                   fullText += parsed.choices[0].delta.content;
+                 }
+              }
+            } catch (e) {
+              if (e.message !== "Unexpected end of JSON input" && !e.message.includes("JSON")) {
+                throw e; 
+              }
             }
           }
         }
       }
+    } finally {
+       clearTimeout(timeoutId); // Global timeout is solely cleared when stream fully resolves or rejects
     }
 
     let text = fullText
