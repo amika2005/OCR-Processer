@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 
 export const maxDuration = 300; 
 export const dynamic = "force-dynamic"; 
+export const runtime = "edge"; 
 
 // config sizeLimit is not supported in the app router this way.
 

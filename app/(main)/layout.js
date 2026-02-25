@@ -9,7 +9,7 @@ export default function ProtectedLayout({ children }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <div className="h-screen flex flex-col bg-background">
+    <div className="h-[100dvh] flex flex-col bg-background">
       <div className="print:hidden relative z-50">
         <Navbar
           collapsed={collapsed}

@@ -499,7 +499,7 @@ export default function ProcessedResults() {
 
   return (
     <>
-      <div className="h-full bg-background flex flex-col p-4 sm:p-6 overflow-y-auto lg:overflow-hidden print:hidden">
+      <div className="h-full bg-background flex flex-col p-4 sm:p-6 pb-24 sm:pb-6 overflow-y-auto lg:overflow-hidden print:hidden">
         <div className="max-w-[1920px] mx-auto w-full h-full flex flex-col">
           <div className="mb-4 shrink-0">
             <h1 className="text-xl sm:text-2xl font-bold text-foreground">
@@ -582,7 +582,7 @@ export default function ProcessedResults() {
                 <div className="flex flex-col h-[300px] lg:h-auto lg:flex-1 min-h-0">
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="font-bold text-foreground text-sm">
-                      {t("results.tabularData")}
+                      {t("results.extractedText")}
                     </h3>
                   </div>
                   <div className="flex-1 border border-border rounded-lg bg-card overflow-hidden relative group">
@@ -607,7 +607,7 @@ export default function ProcessedResults() {
                 <div className="flex flex-col h-[300px] lg:h-auto lg:flex-1 min-h-0">
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="font-bold text-foreground text-sm">
-                      {t("results.translatedData")}                    </h3>
+                      {t("results.translatedText")}                    </h3>
                   </div>
                   <div className="flex-1 border border-border rounded-lg bg-card overflow-hidden relative group">
                     <div

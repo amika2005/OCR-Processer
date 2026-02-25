@@ -159,7 +159,7 @@ export default function DashboardHome() {
   ];
 
   return (
-    <div className="min-h-full w-full overflow-x-hidden p-4 sm:p-6 bg-background">
+    <div className="min-h-full w-full overflow-x-hidden p-4 sm:p-6 pb-24 sm:pb-6 bg-background">
       {/* Header */}
       <div className="mb-4 sm:mb-6">
         <h2 className="text-lg font-bold text-foreground sm:text-xl md:text-2xl">
