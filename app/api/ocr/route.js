@@ -29,6 +29,7 @@ export async function POST(req) {
         model: "gemini-2.5-flash",
         temperature: 0.1,
         response_format: { type: "json_object" },
+        stream: true,
         messages: [
           {
             role: "user",
@@ -53,9 +54,14 @@ export async function POST(req) {
       const errText = await geminiResponse.text();
       return NextResponse.json({ error: `Downstream API Error: ${geminiResponse.status} - ${errText}` }, { status: geminiResponse.status });
     }
-
-    const data = await geminiResponse.json();
-    return NextResponse.json(data);
+ 
+    return new Response(geminiResponse.body, {
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+      },
+    });
 
   } catch (error) {
     console.error("OCR API Route Error:", error);

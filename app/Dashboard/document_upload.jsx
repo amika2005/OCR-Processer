@@ -192,9 +192,38 @@ export default function DocumentUpload() {
       throw new Error(`API Error: ${response.status} - ${errText}`);
     }
 
-    const data = await response.json();
-    let text = data.choices?.[0]?.message?.content || "";
-    text = text
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder("utf-8");
+    let fullText = "";
+    let buffer = "";
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n");
+      buffer = lines.pop() || "";
+      
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (trimmed.startsWith("data: ") && !trimmed.includes("[DONE]")) {
+          try {
+            const jsonStr = trimmed.slice(6);
+            if (jsonStr) {
+               const parsed = JSON.parse(jsonStr);
+               if (parsed.choices?.[0]?.delta?.content) {
+                 fullText += parsed.choices[0].delta.content;
+               }
+            }
+          } catch (e) {
+            // ignore partial json
+          }
+        }
+      }
+    }
+
+    let text = fullText
       .replace(/^```[a-z]*\n/i, "")
       .replace(/\n```$/i, "")
       .trim();
