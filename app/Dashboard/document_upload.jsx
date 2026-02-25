@@ -131,7 +131,7 @@ export default function DocumentUpload() {
           canvas.height = height;
           const ctx = canvas.getContext("2d");
           ctx.drawImage(img, 0, 0, width, height);
-          resolve(canvas.toDataURL("image/jpeg", 0.7)); // Compress to 70% JPEG
+          resolve(canvas.toDataURL("image/jpeg", 0.7));
         };
         img.onerror = (err) => reject(err);
       };
@@ -163,7 +163,7 @@ export default function DocumentUpload() {
     }
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 300000); // 5 minutes timeout
+    const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 seconds (Vercel max edge is 30s)
 
     let response;
     try {
@@ -188,6 +188,7 @@ export default function DocumentUpload() {
 
     if (!response.ok) {
       const errText = await response.text();
+      alert(`API Error: ${response.status} - ${errText}`);
       throw new Error(`API Error: ${response.status} - ${errText}`);
     }
 
@@ -276,7 +277,7 @@ export default function DocumentUpload() {
               file_name: file.name,
               file_path: filePath,
               file_size: file.size,
-              mime_type: file.type,
+              mime_type: file.type || "application/octet-stream",
               status: "pending",
             })
             .select()
@@ -366,13 +367,13 @@ export default function DocumentUpload() {
       } catch (err) {
         console.error(`Upload/Insert failed for ${file.name}:`, err.message);
         setFileStatuses((prev) => ({ ...prev, [i]: "error" }));
-        alert(`Processing error for ${file.name}. Please try again.`);
+        alert(`Processing error for ${file.name}: ${err.message}`);
         failedCount++;
       }
     }
 
     clearInterval(progressInterval);
-    setProcessingProgress(100);
+    setProcessingProgress(failedCount === files.length ? 0 : 100);
 
     setUploadResults({ success: successCount, failed: failedCount });
     setUploadComplete(true);
