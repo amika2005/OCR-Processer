@@ -104,38 +104,48 @@ export default function DocumentUpload() {
 
   const compressImage = async (file) => {
     return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = (event) => {
-        const img = new Image();
-        img.src = event.target.result;
-        img.onload = () => {
-          const canvas = document.createElement("canvas");
-          const MAX_WIDTH = 800; // Lowered to 800px for robust mobile upload speeds
-          const MAX_HEIGHT = 800;
-          let width = img.width;
-          let height = img.height;
+      try {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+          const img = new Image();
+          img.src = event.target.result;
+          img.onload = () => {
+            try {
+              const canvas = document.createElement("canvas");
+              const MAX_WIDTH = 800; 
+              const MAX_HEIGHT = 800;
+              let width = img.width;
+              let height = img.height;
 
-          if (width > height) {
-            if (width > MAX_WIDTH) {
-              height *= Math.round(MAX_WIDTH / width);
-              width = MAX_WIDTH;
+              if (width > height) {
+                if (width > MAX_WIDTH) {
+                  height *= Math.round(MAX_WIDTH / width);
+                  width = MAX_WIDTH;
+                }
+              } else {
+                if (height > MAX_HEIGHT) {
+                  width *= Math.round(MAX_HEIGHT / height);
+                  height = MAX_HEIGHT;
+                }
+              }
+              canvas.width = width;
+              canvas.height = height;
+              const ctx = canvas.getContext("2d");
+              if (!ctx) throw new Error("Could not get 2d context");
+              ctx.drawImage(img, 0, 0, width, height);
+              resolve(canvas.toDataURL("image/jpeg", 0.7));
+            } catch (err) {
+               console.warn("Canvas compression failed, returning uncompressed image:", err);
+               resolve(event.target.result); // Fallback to raw base64 if canvas dies
             }
-          } else {
-            if (height > MAX_HEIGHT) {
-              width *= Math.round(MAX_HEIGHT / height);
-              height = MAX_HEIGHT;
-            }
-          }
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext("2d");
-          ctx.drawImage(img, 0, 0, width, height);
-          resolve(canvas.toDataURL("image/jpeg", 0.7));
+          };
+          img.onerror = (err) => reject(new Error("Image Load failed"));
         };
-        img.onerror = (err) => reject(err);
-      };
-      reader.onerror = (err) => reject(err);
+        reader.onerror = (err) => reject(new Error("File Read failed"));
+      } catch (err) {
+         reject(err);
+      }
     });
   };
 
@@ -229,7 +239,7 @@ export default function DocumentUpload() {
         }
       }
     } finally {
-       clearTimeout(timeoutId); // Global timeout is solely cleared when stream fully resolves or rejects
+       clearTimeout(timeoutId); 
     }
 
     let text = fullText
