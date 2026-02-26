@@ -119,10 +119,10 @@ export default function ProcessedResults() {
       if (storedResults) {
         const parsed = JSON.parse(storedResults);
         if (parsed && parsed.length > 0) {
-          parsed[0].extractedText = parsedJson.extractedText;
+          parsed[0].text = parsedJson.extractedText;
           parsed[0].translatedText = parsedJson.translatedText;
           parsed[0].tableData = cleanTableData;
-          documentId = parsed[0].id || parsed[0].documentId;
+          documentId = parsed[0].documentId;
           localStorage.setItem("latestOcrResults", JSON.stringify(parsed));
         }
       }
@@ -158,9 +158,9 @@ export default function ProcessedResults() {
         try {
           const parsed = JSON.parse(storedResults);
           if (parsed && parsed.length > 0) {
-          const combinedText = parsed.map((p) => p.extractedText || p.text || "").join("\n\n");
+          const combinedText = parsed.map((p) => p.text).join("\n\n");
           const combinedTranslated = parsed
-            .map((p) => p.translatedText || "")
+            .map((p) => p.translatedText)
             .join("\n\n");
 
           setExtractedContent(combinedText);
