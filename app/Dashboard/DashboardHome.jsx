@@ -42,6 +42,12 @@ export default function DashboardHome() {
 
     if (authLoading) return;
 
+    // If auth is done loading but there's no user, stop loading immediately
+    if (!user) {
+      setIsLoading(false);
+      return;
+    }
+
     const fetchDashboardData = async (showLoading = true) => {
       if (showLoading) setIsLoading(true);
       try {
@@ -51,18 +57,10 @@ export default function DashboardHome() {
           }, 8000);
         }
 
-        const { data: sessionData } = await client.auth.getSession();
-        const activeUser = sessionData?.session?.user || user;
-
-        if (!activeUser) {
-           setIsLoading(false);
-           return;
-        }
-
         const { data: docs, error: docsError } = await client
           .from("documents")
           .select("id, status, created_at, file_name")
-          .eq("user_id", activeUser.id)
+          .eq("user_id", user.id)
           .order("created_at", { ascending: false });
 
         if (docsError) {
@@ -95,7 +93,7 @@ export default function DashboardHome() {
         console.error("Unexpected error fetching dashboard data:", error);
       } finally {
         if (timeoutId) clearTimeout(timeoutId);
-        if (showLoading) setIsLoading(false);
+        setIsLoading(false);
       }
     };
 
