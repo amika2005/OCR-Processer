@@ -320,14 +320,18 @@ export default function DocumentUpload() {
 
           extractedResults.push({
             id: documentId || Date.now() + i,
+            documentId: documentId,
             name: file.name,
+            fileName: file.name,
+            filePath: filePath,
             size: formatFileSize(file.size),
             type: file.type,
             extractedText: extractedText,
+            text: extractedText, // Legacy key for results page compatibility
             translatedText: translatedText,
             tableData: ocrResult.tableData || [],
             status: "success",
-            imageUrl: imageUrl, // Safe public/signed URL or blob fallback
+            imageUrl: imageUrl,
           });
 
           successCount++;
